@@ -115,7 +115,7 @@ public class XmlFeedParser {
     public static String readEnclosure(XmlPullParser parser)
             throws IOException, XmlPullParserException {
         //parser.require(XmlPullParser.START_TAG, null, "enclosure");
-        String data = "implementar...";
+        String data = parser.getAttributeValue(null, "url");
         //parser.require(XmlPullParser.END_TAG, null, "enclosure");
         return data;
     }
