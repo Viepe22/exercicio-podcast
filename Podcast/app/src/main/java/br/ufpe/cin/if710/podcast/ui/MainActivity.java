@@ -1,9 +1,12 @@
 package br.ufpe.cin.if710.podcast.ui;
 
 import android.app.Activity;
+import android.content.ContentValues;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -22,6 +25,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import br.ufpe.cin.if710.podcast.R;
+import br.ufpe.cin.if710.podcast.db.PodcastDBHelper;
+import br.ufpe.cin.if710.podcast.db.PodcastProvider;
+import br.ufpe.cin.if710.podcast.db.PodcastProviderContract;
 import br.ufpe.cin.if710.podcast.domain.ItemFeed;
 import br.ufpe.cin.if710.podcast.domain.XmlFeedParser;
 import br.ufpe.cin.if710.podcast.ui.adapter.XmlFeedAdapter;
@@ -87,6 +93,19 @@ public class MainActivity extends Activity {
             List<ItemFeed> itemList = new ArrayList<>();
             try {
                 itemList = XmlFeedParser.parse(getRssFeed(params[0]));
+                for(ItemFeed itemFeed : itemList){
+                    ContentValues values = new ContentValues();
+
+                    values.put(PodcastDBHelper.EPISODE_DATE, getValidString(itemFeed.getPubDate()));
+                    values.put(PodcastDBHelper.EPISODE_DESC, getValidString(itemFeed.getDescription()));
+                    values.put(PodcastDBHelper.EPISODE_DOWNLOAD_LINK, getValidString(itemFeed.getDownloadLink()));
+                    values.put(PodcastDBHelper.EPISODE_LINK, getValidString(itemFeed.getLink()));
+                    values.put(PodcastDBHelper.EPISODE_TITLE, getValidString(itemFeed.getTitle()));
+                    values.put(PodcastDBHelper.EPISODE_FILE_URI, "");
+                    Uri uri =
+                            getContentResolver().insert(PodcastProviderContract.EPISODE_LIST_URI, values);
+                    Log.d("SAVE_ITEM", "saveItem: " + uri.toString());
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (XmlPullParserException e) {
@@ -116,6 +135,10 @@ public class MainActivity extends Activity {
                 }
             });
             /**/
+        }
+
+        private String getValidString(String str){
+            return str != null ? str : "";
         }
     }
 
