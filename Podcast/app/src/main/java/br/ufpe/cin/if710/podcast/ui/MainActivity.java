@@ -96,14 +96,13 @@ public class MainActivity extends Activity {
                 for(ItemFeed itemFeed : itemList){
                     ContentValues values = new ContentValues();
 
-                    values.put(PodcastDBHelper.EPISODE_DATE, getValidString(itemFeed.getPubDate()));
-                    values.put(PodcastDBHelper.EPISODE_DESC, getValidString(itemFeed.getDescription()));
-                    values.put(PodcastDBHelper.EPISODE_DOWNLOAD_LINK, getValidString(itemFeed.getDownloadLink()));
-                    values.put(PodcastDBHelper.EPISODE_LINK, getValidString(itemFeed.getLink()));
-                    values.put(PodcastDBHelper.EPISODE_TITLE, getValidString(itemFeed.getTitle()));
-                    values.put(PodcastDBHelper.EPISODE_FILE_URI, "");
-                    Uri uri =
-                            getContentResolver().insert(PodcastProviderContract.EPISODE_LIST_URI, values);
+                    values.put(PodcastProviderContract.DATE, getValidString(itemFeed.getPubDate()));
+                    values.put(PodcastProviderContract.DESCRIPTION, getValidString(itemFeed.getDescription()));
+                    values.put(PodcastProviderContract.DOWNLOAD_LINK, getValidString(itemFeed.getDownloadLink()));
+                    values.put(PodcastProviderContract.EPISODE_LINK, getValidString(itemFeed.getLink()));
+                    values.put(PodcastProviderContract.TITLE, getValidString(itemFeed.getTitle()));
+                    values.put(PodcastProviderContract.EPISODE_URI, "");
+                    Uri uri = getContentResolver().insert(PodcastProviderContract.EPISODE_LIST_URI, values);
                     Log.d("SAVE_ITEM", "saveItem: " + uri.toString());
                 }
             } catch (IOException e) {
@@ -137,7 +136,7 @@ public class MainActivity extends Activity {
             /**/
         }
 
-        private String getValidString(String str){
+        private String getValidString(String str) {
             return str != null ? str : "";
         }
     }
