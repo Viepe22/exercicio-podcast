@@ -34,7 +34,27 @@ public class PodcastProvider extends ContentProvider {
         Uri contentUri = null;
         // se a uri eh valida, insere no BD recuperando o id
         if(isEpisodeTableUri(uri)){
-            long id = dbHelper.getWritableDatabase().insert(PodcastDBHelper.DATABASE_TABLE, null, values);
+            long id;
+            // verifica se item ja existe no BD
+            Cursor c = dbHelper.getReadableDatabase().query(PodcastDBHelper.DATABASE_TABLE,
+                    PodcastDBHelper.columns,
+                    PodcastDBHelper.EPISODE_TITLE + "=?",
+                    new String[]{(String) values.get(PodcastProviderContract.TITLE)},
+                    null, null, null);
+
+            if (c != null) {
+                c.moveToFirst();
+                try {
+                    // caso exista, recupera o id
+                    id = c.getLong(c.getColumnIndex(PodcastDBHelper._ID));
+                } catch (IndexOutOfBoundsException e) {
+                    // caso contrario, insere
+                    id = dbHelper.getWritableDatabase().insert(PodcastDBHelper.DATABASE_TABLE, null, values);
+                }
+            } else {
+                // caso contrario, insere
+                id = dbHelper.getWritableDatabase().insert(PodcastDBHelper.DATABASE_TABLE, null, values);
+            }
             contentUri = Uri.withAppendedPath(PodcastProviderContract.EPISODE_LIST_URI, Long.toString(id));
         }
         // retorna a URI de acesso ao item criado

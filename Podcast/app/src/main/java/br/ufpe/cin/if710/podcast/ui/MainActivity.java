@@ -3,6 +3,7 @@ package br.ufpe.cin.if710.podcast.ui;
 import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -63,7 +64,7 @@ public class MainActivity extends Activity {
         int id = item.getItemId();
 
         if (id == R.id.action_settings) {
-            startActivity(new Intent(this,SettingsActivity.class));
+            startActivity(new Intent(this, SettingsActivity.class));
         }
 
         return super.onOptionsItemSelected(item);
@@ -72,6 +73,10 @@ public class MainActivity extends Activity {
     @Override
     protected void onStart() {
         super.onStart();
+
+        // update list
+        new ProviderTask().execute();
+
         new DownloadXmlTask().execute(RSS_FEED);
     }
 
@@ -93,7 +98,7 @@ public class MainActivity extends Activity {
             List<ItemFeed> itemList = new ArrayList<>();
             try {
                 itemList = XmlFeedParser.parse(getRssFeed(params[0]));
-                for(ItemFeed itemFeed : itemList){
+                for (ItemFeed itemFeed : itemList) {
                     ContentValues values = new ContentValues();
 
                     values.put(PodcastProviderContract.DATE, getValidString(itemFeed.getPubDate()));
@@ -139,6 +144,43 @@ public class MainActivity extends Activity {
         private String getValidString(String str) {
             return str != null ? str : "";
         }
+    }
+
+    private class ProviderTask extends AsyncTask<Void, Void, List<ItemFeed>> {
+        @Override
+        protected List<ItemFeed> doInBackground(Void... params) {
+            List<ItemFeed> lista = new ArrayList<>();
+            Cursor c = getContentResolver().query(PodcastProviderContract.EPISODE_LIST_URI,null,null,null,null);
+            if (c != null) {
+                c.moveToFirst();
+                while (c.moveToNext()) {
+                    lista.add(new ItemFeed(
+                                    c.getString(c.getColumnIndex(PodcastProviderContract.TITLE)),
+                                    c.getString(c.getColumnIndex(PodcastProviderContract.EPISODE_LINK)),
+                                    c.getString(c.getColumnIndex(PodcastProviderContract.DATE)),
+                                    c.getString(c.getColumnIndex(PodcastProviderContract.DESCRIPTION)),
+                                    c.getString(c.getColumnIndex(PodcastProviderContract.DOWNLOAD_LINK)))
+                    );
+                }
+                c.close();
+            }
+            return lista;
+        }
+        @Override
+        protected void onPostExecute(List<ItemFeed> itemFeeds) {
+            updatePodcastItems(itemFeeds);
+            //Toast.makeText(getApplicationContext(), "itens: " + itemFeeds.size(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    public void updatePodcastItems(List<ItemFeed> feed) {
+        //Adapter Personalizado
+        XmlFeedAdapter adapter = new XmlFeedAdapter(getApplicationContext(), R.layout.itemlista, feed);
+
+        items.setAdapter(adapter);
+        items.setTextFilterEnabled(true);
+
+        Log.d("LIST_FROM_DB", "List Updated");
     }
 
     //TODO Opcional - pesquise outros meios de obter arquivos da internet
