@@ -3,7 +3,7 @@ package br.ufpe.cin.if710.podcast.domain;
 import java.io.Serializable;
 
 public class ItemFeed implements Serializable {
-    private final int id;
+    private int id;
     private final String title;
     private final String link;
     private final String pubDate;
@@ -64,6 +64,10 @@ public class ItemFeed implements Serializable {
 
     public long getDownloadID() {
         return downloadID;
+    }
+
+    public void setID(int id) {
+        this.id = id;
     }
 
     public void setDownloadUri(String uri) {

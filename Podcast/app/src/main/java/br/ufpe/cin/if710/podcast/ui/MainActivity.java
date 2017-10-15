@@ -156,6 +156,7 @@ public class MainActivity extends Activity {
                 c.moveToFirst();
                 while (c.moveToNext()) {
                     ItemFeed itemFeed = new ItemFeed(
+                            c.getInt(c.getColumnIndex(PodcastProviderContract._ID)),
                             c.getString(c.getColumnIndex(PodcastProviderContract.TITLE)),
                             c.getString(c.getColumnIndex(PodcastProviderContract.EPISODE_LINK)),
                             c.getString(c.getColumnIndex(PodcastProviderContract.DATE)),
