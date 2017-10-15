@@ -46,7 +46,7 @@ public class PodcastDBHelper extends SQLiteOpenHelper {
                     + EPISODE_DESC + " TEXT NOT NULL, "
                     + EPISODE_DOWNLOAD_LINK + " TEXT NOT NULL, "
                     + EPISODE_FILE_URI + " TEXT NOT NULL, "
-                    + EPISODE_DOWNLOAD_ID + " LONG NULL)";
+                    + EPISODE_DOWNLOAD_ID + " LONG NOT NULL)";
 
     @Override
     public void onCreate(SQLiteDatabase sqLiteDatabase) {

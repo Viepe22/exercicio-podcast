@@ -162,12 +162,8 @@ public class MainActivity extends Activity {
                             c.getString(c.getColumnIndex(PodcastProviderContract.DESCRIPTION)),
                             c.getString(c.getColumnIndex(PodcastProviderContract.DOWNLOAD_LINK)),
                             c.getString(c.getColumnIndex(PodcastProviderContract.EPISODE_URI)),
-                            0
+                            c.getLong(c.getColumnIndex(PodcastProviderContract.EPISODE_DOWNLOAD_ID))
                     );
-                    Long downloadID = c.getLong(c.getColumnIndex(PodcastProviderContract.EPISODE_DOWNLOAD_ID));
-                    if(downloadID != null){
-                        itemFeed.setDownloadID(downloadID.longValue());
-                    }
                     lista.add(itemFeed);
                 }
                 c.close();
