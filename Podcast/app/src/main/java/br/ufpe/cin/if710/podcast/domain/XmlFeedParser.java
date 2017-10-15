@@ -88,7 +88,7 @@ public class XmlFeedParser {
                 skip(parser);
             }
         }
-        ItemFeed result = new ItemFeed(title, link, pubDate, description, downloadLink);
+        ItemFeed result = new ItemFeed(title, link, pubDate, description, downloadLink, "NONE", 0);
         return result;
     }
 

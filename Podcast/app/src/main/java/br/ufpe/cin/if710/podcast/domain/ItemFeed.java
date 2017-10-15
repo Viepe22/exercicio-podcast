@@ -12,22 +12,26 @@ public class ItemFeed implements Serializable {
     private String downloadUri;
     private long downloadID;
 
-    public ItemFeed(String title, String link, String pubDate, String description, String downloadLink) {
+    public ItemFeed(String title, String link, String pubDate, String description, String downloadLink, String downloadUri, long downloadID) {
         this.id = -1;
         this.title = title;
         this.link = link;
         this.pubDate = pubDate;
         this.description = description;
         this.downloadLink = downloadLink;
+        this.downloadUri = downloadUri;
+        this.downloadID = downloadID;
     }
 
-    public ItemFeed(int id, String title, String link, String pubDate, String description, String downloadLink) {
+    public ItemFeed(int id, String title, String link, String pubDate, String description, String downloadLink, String downloadUri, long downloadID) {
         this.id = id;
         this.title = title;
         this.link = link;
         this.pubDate = pubDate;
         this.description = description;
         this.downloadLink = downloadLink;
+        this.downloadUri = downloadUri;
+        this.downloadID = downloadID;
     }
 
     public int getId() {

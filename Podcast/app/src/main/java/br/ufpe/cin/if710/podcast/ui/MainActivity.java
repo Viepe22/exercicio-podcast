@@ -106,9 +106,10 @@ public class MainActivity extends Activity {
                     values.put(PodcastProviderContract.DOWNLOAD_LINK, getValidString(itemFeed.getDownloadLink()));
                     values.put(PodcastProviderContract.EPISODE_LINK, getValidString(itemFeed.getLink()));
                     values.put(PodcastProviderContract.TITLE, getValidString(itemFeed.getTitle()));
-                    values.put(PodcastProviderContract.EPISODE_URI, "");
+                    values.put(PodcastProviderContract.EPISODE_URI, "NONE");
+                    values.put(PodcastProviderContract.EPISODE_DOWNLOAD_ID, 0);
+
                     Uri uri = getContentResolver().insert(PodcastProviderContract.EPISODE_LIST_URI, values);
-                    Log.d("SAVE_ITEM", "saveItem: " + uri.toString());
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -154,13 +155,20 @@ public class MainActivity extends Activity {
             if (c != null) {
                 c.moveToFirst();
                 while (c.moveToNext()) {
-                    lista.add(new ItemFeed(
-                                    c.getString(c.getColumnIndex(PodcastProviderContract.TITLE)),
-                                    c.getString(c.getColumnIndex(PodcastProviderContract.EPISODE_LINK)),
-                                    c.getString(c.getColumnIndex(PodcastProviderContract.DATE)),
-                                    c.getString(c.getColumnIndex(PodcastProviderContract.DESCRIPTION)),
-                                    c.getString(c.getColumnIndex(PodcastProviderContract.DOWNLOAD_LINK)))
+                    ItemFeed itemFeed = new ItemFeed(
+                            c.getString(c.getColumnIndex(PodcastProviderContract.TITLE)),
+                            c.getString(c.getColumnIndex(PodcastProviderContract.EPISODE_LINK)),
+                            c.getString(c.getColumnIndex(PodcastProviderContract.DATE)),
+                            c.getString(c.getColumnIndex(PodcastProviderContract.DESCRIPTION)),
+                            c.getString(c.getColumnIndex(PodcastProviderContract.DOWNLOAD_LINK)),
+                            c.getString(c.getColumnIndex(PodcastProviderContract.EPISODE_URI)),
+                            0
                     );
+                    Long downloadID = c.getLong(c.getColumnIndex(PodcastProviderContract.EPISODE_DOWNLOAD_ID));
+                    if(downloadID != null){
+                        itemFeed.setDownloadID(downloadID.longValue());
+                    }
+                    lista.add(itemFeed);
                 }
                 c.close();
             }
