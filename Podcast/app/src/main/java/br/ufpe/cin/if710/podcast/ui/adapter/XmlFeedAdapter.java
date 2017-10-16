@@ -19,6 +19,7 @@ import java.util.List;
 import br.ufpe.cin.if710.podcast.R;
 import br.ufpe.cin.if710.podcast.db.io.PodcastProviderHelper;
 import br.ufpe.cin.if710.podcast.domain.ItemFeed;
+import br.ufpe.cin.if710.podcast.download.DownloadIntentService;
 import br.ufpe.cin.if710.podcast.ui.EpisodeDetailActivity;
 
 public class XmlFeedAdapter extends ArrayAdapter<ItemFeed> {
@@ -73,7 +74,7 @@ public class XmlFeedAdapter extends ArrayAdapter<ItemFeed> {
         } else {
             holder.item_action.setEnabled(true);
             holder.item_action.setTextColor(Color.BLACK);
-            holder.item_action.setWidth(50);
+            holder.item_action.setWidth(40);
             holder.item_action.setText("PLAY");
         }
 
@@ -82,16 +83,16 @@ public class XmlFeedAdapter extends ArrayAdapter<ItemFeed> {
             public void onClick(View v) {
                 if (itemFeed.getDownloadUri().equals("NONE")) {
                     Toast.makeText(getContext(),"Baixando podcast", Toast.LENGTH_SHORT).show();
-                    // solicita o download manager do sistema para fazer o download do podcast
-                    DownloadManager downloadManager = (DownloadManager) getContext().getSystemService(Context.DOWNLOAD_SERVICE);
-                    // coloca o download numa fila e recupera seu ID para recuperar o arquivo posteriormente
-                    long downloadID = downloadManager.enqueue(new DownloadManager.Request(Uri.parse(itemFeed.getDownloadLink())));
-                    Log.d("BUTTON_CLICK", "Download in queue with ID: " + downloadID);
-                    // salva o ID no BD
-                    PodcastProviderHelper.updateDownloadID(getContext(), itemFeed.getId(), downloadID);
+
+                    // cria intent para o service de download
+                    Intent intent = new Intent(getContext(), DownloadIntentService.class);
+                    // passando o itemfeed como extra
+                    intent.putExtra(DownloadIntentService.ITEM_FEED, itemFeed);
+                    // chama o intent service para ealizar o download.
+                    getContext().startService(intent);
 
                     holder.item_action.setEnabled(false);
-                    itemFeed.setDownloadID(downloadID);
+                    itemFeed.setDownloadID(1);
                 } else {
                     Toast.makeText(getContext(), "Tocando podcast", Toast.LENGTH_SHORT).show();
                 }

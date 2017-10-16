@@ -1,8 +1,12 @@
 package br.ufpe.cin.if710.podcast.ui;
 
 import android.app.Activity;
+import android.app.DownloadManager;
+import android.content.BroadcastReceiver;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -76,8 +80,11 @@ public class MainActivity extends Activity {
 
         // update list
         new ProviderTask().execute();
-
         new DownloadXmlTask().execute(RSS_FEED);
+
+        MyDownloadReceiver receiver = new MyDownloadReceiver();
+        IntentFilter intentFilter = new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE);
+        registerReceiver(receiver, intentFilter);
     }
 
     @Override
@@ -85,6 +92,15 @@ public class MainActivity extends Activity {
         super.onStop();
         XmlFeedAdapter adapter = (XmlFeedAdapter) items.getAdapter();
         adapter.clear();
+    }
+
+    public class MyDownloadReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            List<ItemFeed> list = readDB();
+
+            updatePodcastItems(list);
+        }
     }
 
     private class DownloadXmlTask extends AsyncTask<String, Void, List<ItemFeed>> {
@@ -150,26 +166,7 @@ public class MainActivity extends Activity {
     private class ProviderTask extends AsyncTask<Void, Void, List<ItemFeed>> {
         @Override
         protected List<ItemFeed> doInBackground(Void... params) {
-            List<ItemFeed> lista = new ArrayList<>();
-            Cursor c = getContentResolver().query(PodcastProviderContract.EPISODE_LIST_URI,null,null,null,null);
-            if (c != null) {
-                c.moveToFirst();
-                while (c.moveToNext()) {
-                    ItemFeed itemFeed = new ItemFeed(
-                            c.getInt(c.getColumnIndex(PodcastProviderContract._ID)),
-                            c.getString(c.getColumnIndex(PodcastProviderContract.TITLE)),
-                            c.getString(c.getColumnIndex(PodcastProviderContract.EPISODE_LINK)),
-                            c.getString(c.getColumnIndex(PodcastProviderContract.DATE)),
-                            c.getString(c.getColumnIndex(PodcastProviderContract.DESCRIPTION)),
-                            c.getString(c.getColumnIndex(PodcastProviderContract.DOWNLOAD_LINK)),
-                            c.getString(c.getColumnIndex(PodcastProviderContract.EPISODE_URI)),
-                            c.getLong(c.getColumnIndex(PodcastProviderContract.EPISODE_DOWNLOAD_ID))
-                    );
-                    lista.add(itemFeed);
-                }
-                c.close();
-            }
-            return lista;
+            return readDB();
         }
         @Override
         protected void onPostExecute(List<ItemFeed> itemFeeds) {
@@ -178,6 +175,28 @@ public class MainActivity extends Activity {
         }
     }
 
+    private List<ItemFeed> readDB() {
+        List<ItemFeed> list = new ArrayList<>();
+        Cursor c = getContentResolver().query(PodcastProviderContract.EPISODE_LIST_URI,null,null,null,null);
+        if (c != null) {
+            c.moveToFirst();
+            while (c.moveToNext()) {
+                ItemFeed itemFeed = new ItemFeed(
+                        c.getInt(c.getColumnIndex(PodcastProviderContract._ID)),
+                        c.getString(c.getColumnIndex(PodcastProviderContract.TITLE)),
+                        c.getString(c.getColumnIndex(PodcastProviderContract.EPISODE_LINK)),
+                        c.getString(c.getColumnIndex(PodcastProviderContract.DATE)),
+                        c.getString(c.getColumnIndex(PodcastProviderContract.DESCRIPTION)),
+                        c.getString(c.getColumnIndex(PodcastProviderContract.DOWNLOAD_LINK)),
+                        c.getString(c.getColumnIndex(PodcastProviderContract.EPISODE_URI)),
+                        c.getLong(c.getColumnIndex(PodcastProviderContract.EPISODE_DOWNLOAD_ID))
+                );
+                list.add(itemFeed);
+            }
+            c.close();
+        }
+        return list;
+    }
     public void updatePodcastItems(List<ItemFeed> feed) {
         //Adapter Personalizado
         XmlFeedAdapter adapter = new XmlFeedAdapter(getApplicationContext(), R.layout.itemlista, feed);
