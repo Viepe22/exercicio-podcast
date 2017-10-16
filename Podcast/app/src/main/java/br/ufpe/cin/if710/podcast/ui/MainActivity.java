@@ -2,11 +2,17 @@ package br.ufpe.cin.if710.podcast.ui;
 
 import android.app.Activity;
 import android.app.DownloadManager;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.NotificationChannel;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -35,6 +41,7 @@ import br.ufpe.cin.if710.podcast.db.PodcastProvider;
 import br.ufpe.cin.if710.podcast.db.PodcastProviderContract;
 import br.ufpe.cin.if710.podcast.domain.ItemFeed;
 import br.ufpe.cin.if710.podcast.domain.XmlFeedParser;
+import br.ufpe.cin.if710.podcast.receiver.DownloadReceiver;
 import br.ufpe.cin.if710.podcast.ui.adapter.XmlFeedAdapter;
 
 public class MainActivity extends Activity {
@@ -44,6 +51,8 @@ public class MainActivity extends Activity {
     //TODO teste com outros links de podcast
 
     private ListView items;
+
+    MyDownloadReceiver receiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,7 +91,8 @@ public class MainActivity extends Activity {
         new ProviderTask().execute();
         new DownloadXmlTask().execute(RSS_FEED);
 
-        MyDownloadReceiver receiver = new MyDownloadReceiver();
+        receiver = new MyDownloadReceiver();
+        receiver.disableNotifications();
         IntentFilter intentFilter = new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE);
         registerReceiver(receiver, intentFilter);
     }
@@ -94,19 +104,72 @@ public class MainActivity extends Activity {
         adapter.clear();
     }
 
-    public class MyDownloadReceiver extends BroadcastReceiver {
+    @Override
+    protected void onResume() {
+        Log.d("ON_RESUME", "Resuming MainActivity.");
+        super.onResume();
+
+        receiver.disableNotifications();
+    }
+
+    @Override
+    protected void onPause() {
+        Log.d("ON_PAUSE", "Pausing MainActivity.");
+        receiver.enableNotifications();
+
+        super.onPause();
+    }
+
+    public class MyDownloadReceiver extends DownloadReceiver {
+
+        public static final String NOTIFICATION_TITLE = "Download complete!";
+        public static final String NOTIFICATION_TEXT = "Your Podcast download was successfully completed!";
+
+        public static final int NOTIFICATION_ID = 1;
+
+        private int showNotification;
+
         @Override
         public void onReceive(Context context, Intent intent) {
+            super.onReceive(context, intent);
             List<ItemFeed> list = readDB();
-
             updatePodcastItems(list);
+            //new ProviderTask().execute();
+
+            if (showNotification == 1) {
+                /*Intent activityIntent = new Intent(context, MainActivity.class);
+                PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, activityIntent, PendingIntent.FLAG_ONE_SHOT);
+
+                // define a notificacao
+                Notification.Builder notification = new Notification.Builder(context)
+                        .setContentTitle(NOTIFICATION_TITLE)
+                        .setContentText(NOTIFICATION_TEXT)
+                        .setContentIntent(pendingIntent)
+                        .setSmallIcon(R.mipmap.ic_launcher)
+                        .setAutoCancel(true);
+
+                NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+                // envia a notificacao para o notification manager
+                notificationManager.notify(NOTIFICATION_ID, notification.build());*/
+            } else {
+                Toast.makeText(context, "Download complete!", Toast.LENGTH_SHORT).show();
+            }
+
+        }
+
+        public void enableNotifications() {
+            showNotification = 1;
+        }
+
+        public void disableNotifications() {
+            showNotification = 0;
         }
     }
 
     private class DownloadXmlTask extends AsyncTask<String, Void, List<ItemFeed>> {
         @Override
         protected void onPreExecute() {
-            Toast.makeText(getApplicationContext(), "iniciando...", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(getApplicationContext(), "iniciando...", Toast.LENGTH_SHORT).show();
         }
 
         @Override
@@ -137,7 +200,7 @@ public class MainActivity extends Activity {
 
         @Override
         protected void onPostExecute(List<ItemFeed> feed) {
-            Toast.makeText(getApplicationContext(), "terminando...", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(getApplicationContext(), "terminando...", Toast.LENGTH_SHORT).show();
 
             //Adapter Personalizado
             XmlFeedAdapter adapter = new XmlFeedAdapter(getApplicationContext(), R.layout.itemlista, feed);
@@ -145,17 +208,6 @@ public class MainActivity extends Activity {
             //atualizar o list view
             items.setAdapter(adapter);
             items.setTextFilterEnabled(true);
-            /*
-            items.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                @Override
-                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    XmlFeedAdapter adapter = (XmlFeedAdapter) parent.getAdapter();
-                    ItemFeed item = adapter.getItem(position);
-                    String msg = item.getTitle() + " " + item.getLink();
-                    Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
-                }
-            });
-            /**/
         }
 
         private String getValidString(String str) {
@@ -171,7 +223,6 @@ public class MainActivity extends Activity {
         @Override
         protected void onPostExecute(List<ItemFeed> itemFeeds) {
             updatePodcastItems(itemFeeds);
-            //Toast.makeText(getApplicationContext(), "itens: " + itemFeeds.size(), Toast.LENGTH_SHORT).show();
         }
     }
 
