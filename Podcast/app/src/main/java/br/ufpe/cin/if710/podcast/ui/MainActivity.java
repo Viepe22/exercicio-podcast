@@ -134,10 +134,9 @@ public class MainActivity extends Activity {
             super.onReceive(context, intent);
             List<ItemFeed> list = readDB();
             updatePodcastItems(list);
-            //new ProviderTask().execute();
 
             if (showNotification == 1) {
-                /*Intent activityIntent = new Intent(context, MainActivity.class);
+                Intent activityIntent = new Intent(context, MainActivity.class);
                 PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, activityIntent, PendingIntent.FLAG_ONE_SHOT);
 
                 // define a notificacao
@@ -148,9 +147,9 @@ public class MainActivity extends Activity {
                         .setSmallIcon(R.mipmap.ic_launcher)
                         .setAutoCancel(true);
 
-                NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+                //NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
                 // envia a notificacao para o notification manager
-                notificationManager.notify(NOTIFICATION_ID, notification.build());*/
+                //notificationManager.notify(NOTIFICATION_ID, notification.build());
             } else {
                 Toast.makeText(context, "Download complete!", Toast.LENGTH_SHORT).show();
             }
